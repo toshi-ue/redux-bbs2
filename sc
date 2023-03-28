@@ -1,13 +1,14 @@
 #!/bin/bash
 
-dc=$(which docker-compose) # docker-compose command with full path
+# dc=$(which docker compose) # docker-compose command with full path
+dc="docker compose"
 
-if [[ -x "$dc" ]]; then
-  :
-else
-  echo "Please install Docker before run this command."
-  exit 2
-fi
+# if [[ -x "$dc" ]]; then
+#   :
+# else
+#   echo "Please install Docker before run this command."
+#   exit 2
+# fi
 
 rm="--rm" # To destroy a container
 
@@ -121,7 +122,8 @@ compose_up() {
   echoing "Create and start containers $*"
   # rm_pids
   $dc up -d
-  docker attach $app_container
+  # docker attach $app_container
+  $dc logs -f
 }
 
 echoing() {
@@ -237,7 +239,8 @@ stop)
   compose_stop $* && exit 0
   ;;
 up)
-  compose_up $* && compose_ps && exit 0
+  # compose_up $* && compose_ps && exit 0
+  compose_up $* && exit 0
   ;;
 yarn)
   run_yarn $*
