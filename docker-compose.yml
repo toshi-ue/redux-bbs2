@@ -16,7 +16,8 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - ./front:/usr/src/app
+      # このvolumes指定しないとホスト側にファイル変更などが反映されない
+      - ./:/usr/src/app
       - node-modules:/frontapp/node_modules:cached
 
 volumes:
