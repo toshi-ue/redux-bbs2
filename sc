@@ -155,29 +155,12 @@ invoke_run() {
   # if [ -n "$DISABLE_DATABASE_ENVIRONMENT_CHECK" ]; then
   #   dbenv="-e DISABLE_DATABASE_ENVIRONMENT_CHECK=$DISABLE_DATABASE_ENVIRONMENT_CHECK "
   # fi
-
   $dc run $rm ${renv}${dbenv}$*
-}
 
-invoke_run_no_deps() {
-  # renv=""
-  # if [ -n "$RAILS_ENV" ]; then
-  #   renv="-e RAILS_ENV=$RAILS_ENV "
-  # fi
-
-  # if [ -n "$TRUNCATE_LOGS" ]; then
-  #   renv="$renv -e TRUNCATE_LOGS=$TRUNCATE_LOGS "
-  # fi
-
-  # dbenv=""
-  # if [ -n "$DISABLE_DATABASE_ENVIRONMENT_CHECK" ]; then
-  #   dbenv="-e DISABLE_DATABASE_ENVIRONMENT_CHECK=$DISABLE_DATABASE_ENVIRONMENT_CHECK "
-  # fi
-
-  $dc run --no-deps $rm ${renv}${dbenv}$*
 }
 
 run_app() {
+  echo $invoke_run
   invoke_run $app $*
 }
 
@@ -186,11 +169,7 @@ run_db() {
 }
 
 run_npm() {
-  run_app npm $*
-}
-
-run_yarn() {
-  run_app yarn $*
+  run_app sh -c "cd front" && npm $*
 }
 
 cmd=$1
@@ -242,16 +221,11 @@ up)
   # compose_up $* && compose_ps && exit 0
   compose_up $* && exit 0
   ;;
-yarn)
-  run_yarn $*
-  ;;
 *)
   read -d '' help <<-EOF
 Usage: $0 command
 
 Service:
-  setup    Create new rails application
-  init     Initialize backend services then run
   ps       Show status of services
   up       Create service containers and start backend services
   down     Stop backend services and remove service containers
@@ -262,29 +236,7 @@ Service:
   run      [service] [command] run command in given container
 
 App:
-  server   Run rails server
-  rails    [args] Run rails command in application container
-  rake     [args] Run rake command in application container
-  db       [args] Run rails db command you can use set(migrate), up, down, reset, other is status
-           ex: ./sc db set #running rails db:migrate
-               ./sc db up 2019010101 #running rails db:migrate:up VERSION=2019010101
-  rspec    [args] Run rspec command in application container
-  test     [args] Run Minitest command in application container
-  bundle   [args] Run bundle command in application container
-  cons     Run rails console
-  rubocop  [args] Run rubocop
-  yarn      Run yarn command in application container
   npm       Run npm  command in application container
-
-Spring
-  spring    Exec spring command in Spring container
-  sdive     Into spring container
-  sdb       [args] Run rails db command you can use set(migrate), up, down, reset, other is status
-             ex: ./sc db set #running rails db:migrate
-                 ./sc db up 2019010101 #running rails db:migrate:up VERSION=2019010101
-
-Solargraph
-  solargraph Run solargraph command in Spring container
 
 DB:
   reset-db  reset database in DB container
