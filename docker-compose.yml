@@ -17,8 +17,14 @@ services:
     tty: true
     volumes:
       # このvolumes指定しないとホスト側にファイル変更などが反映されない
-      - ./:/usr/src/app
-      - node-modules:/frontapp/node_modules:cached
+      - ./:/usr/src/app:cached
+      # FIXME: node_moduleの中身がない問題を解決できていない
+      # [【Docker】node_module の volume 設定に関して（Rails / ruby,node環境） - 7839](https://serip39.hatenablog.com/entry/2022/08/10/120000)
+      - node_modules:/usr/src/app/node_modules
 
 volumes:
-  node-modules:
+  node_modules:
+    driver_opts:
+      type: none
+      device: ${PWD}/front/node_modules
+      o: bind
