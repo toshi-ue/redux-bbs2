@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # dc=$(which docker compose) # docker-compose command with full path
-dc="docker compose"
 
 # if [[ -x "$dc" ]]; then
 #   :
@@ -9,6 +8,7 @@ dc="docker compose"
 #   echo "Please install Docker before run this command."
 #   exit 2
 # fi
+dc="docker compose"
 
 rm="--rm" # To destroy a container
 
@@ -20,72 +20,6 @@ app_name=$(pwd | awk -F "/" '{ print $NF }') # get project dir name
 
 # define container name
 app_container="${app_name}-${app}-1"
-
-create_project() {
-  webpack=""
-  for arg in $@; do
-    case $arg in
-    --webpack*) webpack="true" ;;
-    *) ;;
-    esac
-  done
-
-  echoing "Exec Bundle Install for executing rails new command"
-  bundle_cmd install
-
-  echoing "Exec rails new with mysql and webpack"
-  bundle_exec rails new . -f -d=mysql $*
-
-  echoing "Exec Bundle Update for alerts"
-  bundle_cmd update
-
-  echoing "Update config/database.yml"
-  mv database.yml config/database.yml
-
-  echoing "Exec db create"
-  bundle_exec rails db:create
-
-  if [ "true" == "$webpack" ]; then
-    echoing "Exec webpacker:install"
-    bundle_exec rails webpacker:install
-  fi
-
-  echoing "docker-compose up"
-  compose_up $app
-
-  echo "You can access to localhost:3000"
-}
-
-init_services() {
-  echoing "Building containers"
-  $dc down -v
-  $dc build --no-cache $app
-
-  bundle_cmd install
-
-  if [ "--webpack" == "$1" ]; then
-    run_yarn install
-  fi
-
-  rails_cmd db:migrate:reset
-  rails_cmd db:seed
-
-  rm_pids
-
-  $dc up $app
-}
-
-bundle_cmd() {
-  run_app bundle $*
-}
-
-bundle_exec() {
-  run_app bundle exec $*
-}
-
-bundle_exec_no_deps() {
-  invoke_run_no_deps $app bundle exec $*
-}
 
 compose_build() {
   echoing "Build containers $*"
@@ -142,26 +76,11 @@ invoke_bash() {
 }
 
 invoke_run() {
-  # renv=""
-  # if [ -n "$RAILS_ENV" ]; then
-  #   renv="-e RAILS_ENV=$RAILS_ENV "
-  # fi
-
-  # if [ -n "$TRUNCATE_LOGS" ]; then
-  #   renv="$renv -e TRUNCATE_LOGS=$TRUNCATE_LOGS "
-  # fi
-
-  # dbenv=""
-  # if [ -n "$DISABLE_DATABASE_ENVIRONMENT_CHECK" ]; then
-  #   dbenv="-e DISABLE_DATABASE_ENVIRONMENT_CHECK=$DISABLE_DATABASE_ENVIRONMENT_CHECK "
-  # fi
-  $dc run $rm ${renv}${dbenv}$*
-
+  $dc run $rm "$@"
 }
 
 run_app() {
-  echo $invoke_run
-  invoke_run $app $*
+  invoke_run $app "$@"
 }
 
 run_db() {
@@ -169,7 +88,7 @@ run_db() {
 }
 
 run_npm() {
-  run_app sh -c "cd front" && npm $*
+  run_app sh -c "cd front && npm $*"
 }
 
 cmd=$1

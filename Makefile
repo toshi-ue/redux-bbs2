@@ -1,4 +1,2 @@
 setup:
-		docker compose build
-
-yarn/install:
+		docker compose build --no-cache
